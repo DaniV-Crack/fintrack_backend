@@ -4,7 +4,27 @@ import { CreateUserDto, UpdateUserDto } from "../models/user.model";
 
 export const usersController = {
   
-    // GET /api/users — Lista todos los usuarios
+  /**
+   * @openapi
+   * /api/users:
+   *   get:
+   *     tags: [Usuarios]
+   *     summary: Listar todos los usuarios
+   *     responses:
+   *       200:
+   *         description: Lista de usuarios
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/User'
+   *                 count:
+   *                   type: integer
+   */
   async getAll(req: Request, res: Response): Promise<void> {
     try {
       const users = await usersService.findAll();
@@ -14,7 +34,37 @@ export const usersController = {
     }
   },
   
-  // GET /api/users/:id — Obtiene un usuario por su ID
+  /**
+   * @openapi
+   * /api/users/{id}:
+   *   get:
+   *     tags: [Usuarios]
+   *     summary: Obtener un usuario por ID
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: ID del usuario
+   *     responses:
+   *       200:
+   *         description: Datos del usuario
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 data:
+   *                   $ref: '#/components/schemas/User'
+   *       404:
+   *         description: Usuario no encontrado
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
   async getById(req: Request, res: Response): Promise<void> {
     try {
       const user = await usersService.findById(req.params.id as string);
@@ -28,7 +78,41 @@ export const usersController = {
     }
   },
   
-  // POST /api/users — Crea un nuevo usuario
+  /**
+   * @openapi
+   * /api/users:
+   *   post:
+   *     tags: [Usuarios]
+   *     summary: Crear un nuevo usuario
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/CreateUserDto'
+   *     responses:
+   *       201:
+   *         description: Usuario creado
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 data:
+   *                   $ref: '#/components/schemas/User'
+   *       400:
+   *         description: Campos requeridos faltantes
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   *       409:
+   *         description: El email ya está registrado
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
   async create(req: Request, res: Response): Promise<void> {
     try {
       const { name, email, password } = req.body as CreateUserDto;
@@ -52,7 +136,43 @@ export const usersController = {
     }
   },
   
-  // PUT /api/users/:id — Actualiza un usuario
+  /**
+   * @openapi
+   * /api/users/{id}:
+   *   put:
+   *     tags: [Usuarios]
+   *     summary: Actualizar un usuario
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: ID del usuario
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             $ref: '#/components/schemas/UpdateUserDto'
+   *     responses:
+   *       200:
+   *         description: Usuario actualizado
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 data:
+   *                   $ref: '#/components/schemas/User'
+   *       404:
+   *         description: Usuario no encontrado
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
   async update(req: Request, res: Response): Promise<void> {
     try {
       const { name, email } = req.body as UpdateUserDto;
@@ -68,7 +188,30 @@ export const usersController = {
     }
   },
   
-  // DELETE /api/users/:id — Elimina un usuario
+  /**
+   * @openapi
+   * /api/users/{id}:
+   *   delete:
+   *     tags: [Usuarios]
+   *     summary: Eliminar un usuario
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *           format: uuid
+   *         description: ID del usuario
+   *     responses:
+   *       204:
+   *         description: Usuario eliminado (sin contenido)
+   *       404:
+   *         description: Usuario no encontrado
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/Error'
+   */
   async remove(req: Request, res: Response): Promise<void> {
     try {
       await usersService.remove(req.params.id as string);

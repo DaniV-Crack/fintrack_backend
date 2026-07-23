@@ -3,9 +3,44 @@ import pool from "../config/database";
 
 const router = Router();
 /**
- * GET /health
- * Verifica el estado del servidor y la conexión a la base de datos.
- * Útil para saber si la app está corriendo correctamente.
+ * @openapi
+ * /health:
+ *   get:
+ *     tags: [Health]
+ *     summary: Verificar estado del servidor y conexión a BD
+ *     responses:
+ *       200:
+ *         description: Servidor y BD funcionando
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/HealthResponse'
+ *       500:
+ *         description: Error de conexión a BD
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: error
+ *                 message:
+ *                   type: string
+ *                 server:
+ *                   type: object
+ *                   properties:
+ *                     timestamp:
+ *                       type: string
+ *                       format: date-time
+ *                 database:
+ *                   type: object
+ *                   properties:
+ *                     status:
+ *                       type: string
+ *                       example: disconnected
+ *                     error:
+ *                       type: string
  */
 router.get("/", async (req: Request, res: Response) => {
   try {
