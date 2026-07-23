@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  categories   Category[]
+  transactions Transaction[]
+  budgets      Budget[]
+
+  @@map("users")
+  @@index([email])
+}
+
+model Category {
+  id        String          @id @default(uuid())
+  userId    String          @map("user_id")
+  name      String
+  type      TransactionType
+  createdAt DateTime        @default(now()) @map("created_at")
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  budgets      Budget[]
+
+  @@map("categories")
+  @@index([userId])
+}
+
+model Transaction {
+  id              String          @id @default(uuid())
+  userId          String          @map("user_id")
+  categoryId      String          @map("category_id")
+  amount          Decimal         @db.Decimal(12, 2)
+  type            TransactionType
+  description     String?
+  transactionDate DateTime        @map("transaction_date")
+  createdAt       DateTime        @default(now()) @map("created_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@map("transactions")
+  @@index([userId])
+  @@index([categoryId])
+  @@index([transactionDate])
+}
+
+model Budget {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  categoryId String   @map("category_id")
+  amount     Decimal  @db.Decimal(12, 2)
+  month      Int
+  year       Int
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@map("budgets")
+  @@index([userId])
+  @@index([categoryId])
+  @@index([month, year])
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
