@@ -1,0 +1,14 @@
+# Dependencias
+node_modules/
+# Código compilado
+dist/
+# Variables de entorno (NUNCA subir a Git)
+.env
+# Logs
+*.log
+npm-debug.log*
+# Sistema operativo
+.DS_Store
+Thumbs.db
+# Coverage
+coverage/
