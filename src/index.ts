@@ -1,66 +1,40 @@
 import express, { Application, Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-
-// Importar rutas
 import healthRouter from "./routes/health";
+import usersRouter from "./routes/user.route";
 
-// Cargar variables de entorno (SIEMPRE primero)
 dotenv.config();
 
-// Crear la aplicación Express con tipado TypeScript
 const app: Application = express();
 const PORT: number = parseInt(process.env.PORT || "3000", 10);
 
-// ────────────────────────────────────────────────────
-// MIDDLEWARES GLOBALES
-// Los middlewares se ejecutan en ORDEN para cada request
-// ────────────────────────────────────────────────────
-// Permitir requests desde otros dominios (necesario para el frontend)
 app.use(cors());
-// Parsear JSON del body de los requests
 app.use(express.json());
-// Parsear form data del body
 app.use(express.urlencoded({ extended: true }));
-
-// ────────────────────────────────────────────────────
-// RUTAS
-// ────────────────────────────────────────────────────
-// Ruta de health check
 app.use("/health", healthRouter);
+app.use("/api/users", usersRouter);
 
-// Ruta raíz informativa
 app.get("/", (req: Request, res: Response) => {
   res.json({
     project: "TaskFlow API",
-    version: "1.0.0",
-    clase: 1,
-    description: "Servidor Express con TypeScript + PostgreSQL",
+    version: "1.1.0",
+    clase: 2,
     endpoints: {
       health: "GET /health",
+      users: "/api/users",
     },
   });
 });
 
-// ────────────────────────────────────────────────────
-// MANEJO DE RUTAS NO ENCONTRADAS (404)
-// ────────────────────────────────────────────────────
 app.use((req: Request, res: Response) => {
-  res.status(404).json({
-    error: "Ruta no encontrada",
-    path: req.path,
-    method: req.method,
-  });
+  res.status(404).json({ error: "Ruta no encontrada", path: req.path });
 });
 
-// ────────────────────────────────────────────────────
-// INICIAR EL SERVIDOR
-// ────────────────────────────────────────────────────
 app.listen(PORT, () => {
-  console.log("\n🚀 TaskFlow API iniciada");
-  console.log(`📡 Puerto: ${PORT}`);
-  console.log(`🔍 Health: http://localhost:${PORT}/health`);
-  console.log(`🌍 Entorno: ${process.env.NODE_ENV || "development"}\n`);
+  console.log(`\n🚀 TaskFlow API v2 — http://localhost:${PORT}`);
+  console.log(`👥 Usuarios: http://localhost:${PORT}/api/users`);
+  console.log(`📁 Proyectos: http://localhost:${PORT}/api/projects\n`);
 });
 
 export default app;
