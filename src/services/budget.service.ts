@@ -117,7 +117,7 @@ export const budgetService = {
       budgeted,
       spent,
       remaining: budgeted - spent,
-      percentageUsed: budgeted > 0 ? Math.min(Math.round((spent / budgeted) * 100), 100) : 0,
+      percentage: budgeted > 0 ? Math.min(Math.round((spent / budgeted) * 100), 100) : 0,
     };
   },
 };
