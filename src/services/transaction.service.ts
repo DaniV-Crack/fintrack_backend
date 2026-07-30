@@ -141,9 +141,14 @@ export const transactionService = {
     await prisma.transaction.delete({ where: { id } });
   },
 
-  async getSummary(userId: string, month?: number, year?: number) {
+  async getSummary(userId: string, month?: number, year?: number, dateFrom?: string, dateTo?: string) {
     const where: Prisma.TransactionWhereInput = { userId };
-    if (month !== undefined || year !== undefined) {
+
+    if (dateFrom || dateTo) {
+      where.transactionDate = {};
+      if (dateFrom) where.transactionDate.gte = new Date(dateFrom);
+      if (dateTo) where.transactionDate.lte = new Date(dateTo);
+    } else if (month !== undefined || year !== undefined) {
       const dateFilter: Prisma.DateTimeFilter = {};
       if (year) {
         dateFilter.gte = new Date(year, month ? month - 1 : 0, 1);
@@ -156,25 +161,40 @@ export const transactionService = {
       where.transactionDate = dateFilter;
     }
 
-    const aggregation = await prisma.transaction.groupBy({
-      by: ["type"],
-      where,
-      _sum: { amount: true },
-    });
+    const [typeAgg, categoryAgg] = await Promise.all([
+      prisma.transaction.groupBy({
+        by: ["type"],
+        where,
+        _sum: { amount: true },
+      }),
+      prisma.transaction.groupBy({
+        by: ["categoryId", "type"],
+        where,
+        _sum: { amount: true },
+      }),
+    ]);
 
-    const totalIncome =
-      aggregation
-        .find((a) => a.type === "INCOME")
-        ?._sum?.amount?.toNumber() ?? 0;
-    const totalExpense =
-      aggregation
-        .find((a) => a.type === "EXPENSE")
-        ?._sum?.amount?.toNumber() ?? 0;
+    const income =
+      typeAgg.find((a) => a.type === "INCOME")?._sum?.amount?.toNumber() ?? 0;
+    const expense =
+      typeAgg.find((a) => a.type === "EXPENSE")?._sum?.amount?.toNumber() ?? 0;
 
-    return {
-      totalIncome,
-      totalExpense,
-      balance: totalIncome - totalExpense,
-    };
+    const categoryIds = categoryAgg.map((r) => r.categoryId);
+    const categories = categoryIds.length > 0
+      ? await prisma.category.findMany({
+          where: { id: { in: categoryIds } },
+          select: { id: true, name: true },
+        })
+      : [];
+    const categoryMap = new Map(categories.map((c) => [c.id, c.name]));
+
+    const byCategory = categoryAgg.map((r) => ({
+      categoryId: r.categoryId,
+      categoryName: categoryMap.get(r.categoryId) ?? "Desconocida",
+      type: r.type,
+      total: r._sum.amount?.toNumber() ?? 0,
+    }));
+
+    return { income, expense, byCategory };
   },
 };

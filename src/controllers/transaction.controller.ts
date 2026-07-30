@@ -121,7 +121,9 @@ export const transactionController = {
       const year = req.query.year
         ? parseInt(req.query.year as string, 10)
         : undefined;
-      const summary = await transactionService.getSummary(userId, month, year);
+      const dateFrom = req.query.dateFrom as string | undefined;
+      const dateTo = req.query.dateTo as string | undefined;
+      const summary = await transactionService.getSummary(userId, month, year, dateFrom, dateTo);
       res.json(successResponse("Resumen obtenido correctamente", summary));
     } catch (error) {
       res.status(500).json(errorResponse("Error al obtener resumen de transacciones"));
