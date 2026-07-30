@@ -72,7 +72,7 @@ export const dashboardService = {
     return {
       balance: { income, expense, total: income - expense },
       byCategory,
-      budgetAlerts: budgetAlerts.filter((a) => a.percentageUsed >= 80),
+      budgetAlerts,
     };
   },
 };
